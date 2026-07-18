@@ -78,7 +78,27 @@ const defaults = {
   2: { 'p2-n': '752', 'p2-e': '0.03', 'p2-conf': '90', 'p2-p': '0.5', 'p2-b': '50000', 'p2-seed': '1966' },
   3: { 'p3-a': '0', 'p3-b': '1', 'p3-prob': '0.5', 'p3-dist': 'twopoint', 'p3-n': '100', 'p3-conf': '95', 'p3-brep': '50000', 'p3-seed': '1966' },
   4: { 'p4-theta': '2', 'p4-n': '30', 'p4-b': '50000', 'p4-seed': '1966' },
-  5: { 'p5-theta': '2', 'p5-n': '20', 'p5-conf': '95', 'p5-b': '40000', 'p5-mode': 'fast', 'p5-inner': '2000', 'p5-seed': '1966' }
+  5: { 'p5-theta': '2', 'p5-n': '20', 'p5-conf': '95', 'p5-b': '1000', 'p5-mode': 'simulated', 'p5-inner': '500', 'p5-seed': '1966' }
+};
+
+const metricIds = {
+  1: ['p1-nominal', 'p1-coverage', 'p1-mc-error', 'p1-length', 'p1-bias', 'p1-mse'],
+  2: ['p2-normal-n', 'p2-hoeffding-n', 'p2-exact', 'p2-mc', 'p2-diff', 'p2-mc-error'],
+  3: ['p3-var', 'p3-bound', 'p3-cov-normal', 'p3-cov-hoeff', 'p3-len-normal', 'p3-len-hoeff'],
+  4: ['p4-best-bias', 'p4-best-var', 'p4-best-mse'],
+  5: [
+    'p5-exact', 'p5-percentile', 'p5-basic', 'p5-pivotal',
+    'p5-len-exact', 'p5-len-percentile', 'p5-len-basic', 'p5-len-pivotal',
+    'p5-demo-m', 'p5-demo-theta', 'p5-demo-q-low', 'p5-demo-q-high'
+  ]
+};
+
+const chartKeys = {
+  1: ['p1'],
+  2: ['p2'],
+  3: ['p3var', 'p3cov'],
+  4: ['p4dist', 'p4mse'],
+  5: ['p5demo', 'p5']
 };
 
 function el(id) { return document.getElementById(id); }
@@ -122,6 +142,27 @@ function destroyChart(key) {
   }
 }
 
+function stopWorker(problem) {
+  const worker = workers[problem];
+  if (!worker) return;
+  worker.onmessage = null;
+  worker.onerror = null;
+  worker.terminate();
+  workers[problem] = null;
+  buttonBusy(problem, false);
+}
+
+function clearLabOutputs(problem) {
+  metricIds[problem].forEach(id => { el(id).textContent = '—'; });
+  chartKeys[problem].forEach(destroyChart);
+  if (problem === 2) el('p2-worst').textContent = 'Peor cobertura de la malla: —';
+  if (problem === 4) el('p4-table').replaceChildren();
+  if (problem === 5) {
+    el('p5-demo-sample').textContent = '—';
+    el('p5-demo-intervals').replaceChildren();
+  }
+}
+
 function bindRange(inputId, outputId, formatter = value => value) {
   const input = el(inputId);
   const output = el(outputId);
@@ -140,7 +181,7 @@ function validSeed(problem, id) {
 }
 
 function runWorker(problem, params, onProgress, onResult) {
-  if (workers[problem]) workers[problem].terminate();
+  stopWorker(problem);
   const worker = new Worker('sim-worker.js');
   workers[problem] = worker;
   const jobId = `${problem}-${Date.now()}-${Math.random()}`;
@@ -439,7 +480,13 @@ function runP4() {
     reportError(4, 'Use θ > −1, n > 1 y al menos 1 000 réplicas.');
     return;
   }
-  runWorker(4, { theta, n, B, seed, sizes: [5, 10, 20, 40, 80, 150] }, null, result => {
+  runWorker(4, { theta, n, B, seed, sizes: [5, 10, 20, 40, 80, 150] }, partial => {
+    if (partial.phase === 'distribution') {
+      setStatus(4, `Fase 1 de 2: distribución empírica para n=${n}.`);
+    } else if (partial.phase === 'mse') {
+      setStatus(4, `Fase 2 de 2: curva de ECM; procesando n=${partial.size}.`);
+    }
+  }, result => {
     const byBias = [...result.stats].sort((a, b) => Math.abs(a.bias) - Math.abs(b.bias))[0];
     const byVariance = [...result.stats].sort((a, b) => a.variance - b.variance)[0];
     const byMse = [...result.stats].sort((a, b) => a.mse - b.mse)[0];
@@ -456,6 +503,10 @@ function showP5Partial(partial) {
   el('p5-percentile').textContent = pct(partial.percentile);
   el('p5-basic').textContent = pct(partial.basic);
   el('p5-pivotal').textContent = pct(partial.pivotal);
+  if (Number.isFinite(partial.lenExact)) el('p5-len-exact').textContent = fmt(partial.lenExact);
+  if (Number.isFinite(partial.lenPercentile)) el('p5-len-percentile').textContent = fmt(partial.lenPercentile);
+  if (Number.isFinite(partial.lenBasic)) el('p5-len-basic').textContent = fmt(partial.lenBasic);
+  if (Number.isFinite(partial.lenPivotal)) el('p5-len-pivotal').textContent = fmt(partial.lenPivotal);
 }
 
 function buildP5Chart(result, confidence) {
@@ -473,53 +524,138 @@ function buildP5Chart(result, confidence) {
   });
 }
 
+function buildP5DemoChart(showcase, theta) {
+  const values = showcase.bootstrapMinima.filter(Number.isFinite).sort((a, b) => a - b);
+  const min = values[0];
+  const max = values[values.length - 1];
+  destroyChart('p5demo');
+  charts.p5demo = new Chart(el('p5-demo-chart'), {
+    type: 'line',
+    data: { datasets: [{
+      label: 'Distribución bootstrap de M*',
+      data: histogram(values, min, max, 34),
+      parsing: false,
+      borderColor: palette.accent,
+      backgroundColor: 'rgba(101,242,194,.14)',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: true,
+      tension: .15
+    }] },
+    options: { responsive: true, maintainAspectRatio: false, scales: {
+      x: { type: 'linear', title: { display: true, text: 'Mínimo bootstrap M*' }, grid: { color: palette.grid } },
+      y: { beginAtZero: true, title: { display: true, text: 'Densidad empírica' }, grid: { color: palette.grid } }
+    } }
+  });
+  charts.p5demo.$verticalLines = [
+    { value: showcase.minimum, label: 'M = θ̂', color: palette.blue, dash: [6, 5] },
+    { value: theta, label: 'θ verdadero', color: palette.danger, dash: [3, 4], offset: 16 }
+  ];
+  charts.p5demo.update();
+
+  el('p5-demo-m').textContent = fmt(showcase.minimum);
+  el('p5-demo-theta').textContent = fmt(showcase.minimum);
+  el('p5-demo-q-low').textContent = fmt(showcase.qLow);
+  el('p5-demo-q-high').textContent = fmt(showcase.qHigh);
+  const preview = showcase.sample.slice(0, 8).map(value => fmt(value, 3)).join(', ');
+  el('p5-demo-sample').textContent = `${preview}${showcase.sample.length > 8 ? ', …' : ''}`;
+  const methodLabels = {
+    exact: 'Exacto', percentile: 'Percentil', basic: 'Básico', pivotal: 'Pivotal'
+  };
+  el('p5-demo-intervals').innerHTML = Object.entries(showcase.intervals).map(([method, interval]) => (
+    `<tr><td>${methodLabels[method]}</td><td>[${fmt(interval.lo)}, ${fmt(interval.hi)}]</td><td>${interval.lo <= theta && theta <= interval.hi ? 'Sí' : 'No'}</td></tr>`
+  )).join('');
+}
+
+function updateP5ModeControls(useRecommendedValues) {
+  const simulated = el('p5-mode').value === 'simulated';
+  const outer = el('p5-b');
+  const inner = el('p5-inner');
+  outer.min = simulated ? '200' : '1000';
+  outer.max = simulated ? '5000' : '50000';
+  outer.step = simulated ? '200' : '1000';
+  inner.min = simulated ? '200' : '1000';
+  inner.max = simulated ? '2000' : '20000';
+  inner.step = simulated ? '100' : '1000';
+  if (useRecommendedValues) {
+    outer.value = simulated ? '1000' : '40000';
+    inner.value = simulated ? '500' : '10000';
+    outer.dispatchEvent(new Event('input', { bubbles: true }));
+    inner.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  el('p5-outer-caption').textContent = simulated
+    ? 'R: muestras exteriores (200–5 000)'
+    : 'R: muestras exteriores (1 000–50 000)';
+  el('p5-inner-caption').textContent = simulated
+    ? 'B*: réplicas bootstrap por cada muestra exterior'
+    : 'B*: réplicas para calibrar M*/M una sola vez';
+  el('p5-mode-note').textContent = simulated
+    ? 'Bootstrap paramétrico simulado: para cada muestra exterior se ajusta θ̂=M y se generan B* muestras desde f(x;M).'
+    : 'La versión acelerada sigue siendo bootstrap paramétrico. Aprovecha que la razón M*/M tiene una distribución independiente del valor ajustado, por lo que sus cuantiles pueden calibrarse una vez y reutilizarse.';
+  el('p5-progress-detail').textContent = simulated
+    ? `R exterior: 0/${outer.value} · B*: 0/${inner.value}`
+    : `Calibración pivotal: 0/${inner.value} · R exterior: 0/${outer.value}`;
+}
+
 function runP5() {
   reportError(5);
   if (!validSeed(5, 'p5-seed')) return;
   const theta = num('p5-theta');
   const n = num('p5-n');
   const confidence = num('p5-conf') / 100;
-  const B = num('p5-b');
+  const R = num('p5-b');
   const mode = el('p5-mode').value;
   const inner = num('p5-inner');
   const seed = num('p5-seed');
-  if (!(theta > 0) || !(n > 1) || !(B >= 1000)) {
-    reportError(5, 'Use θ > 0, n > 1 y al menos 1 000 réplicas exteriores.');
+  if (!(theta > 0) || !(n > 1)) {
+    reportError(5, 'Use θ > 0 y n > 1; esta condición es necesaria para que E[M] sea finita.');
     return;
   }
-  if (mode === 'nested' && !(inner >= 200)) {
-    reportError(5, 'El modo con cuantiles simulados requiere al menos 200 réplicas interiores.');
+  if (mode === 'simulated' && (!(R >= 200 && R <= 5000) || !(inner >= 200 && inner <= 2000) || R * inner > 5000000 || R * inner * n > 25000000)) {
+    reportError(5, 'En el modo simulado use 200 ≤ R ≤ 5 000, 200 ≤ B* ≤ 2 000, R×B* ≤ 5 000 000 y R×B*×n ≤ 25 000 000.');
+    return;
+  }
+  if (mode === 'accelerated' && (!(R >= 1000 && R <= 50000) || !(inner >= 1000 && inner <= 20000))) {
+    reportError(5, 'En la versión acelerada use 1 000 ≤ R ≤ 50 000 y 1 000 ≤ B* ≤ 20 000.');
     return;
   }
   const alpha = 1 - confidence;
-  el('p5-mode-note').textContent = mode === 'fast'
-    ? 'Modo rápido: usa los cuantiles conocidos de la razón M*/M; las réplicas exteriores evalúan cobertura.'
-    : `Modo simulado: ${inner.toLocaleString('es-CO')} réplicas interiores aproximan los cuantiles de M*/M antes de evaluar las muestras exteriores.`;
-  runWorker(5, { theta, n, B, seed, alpha, mode, inner }, partial => {
+  runWorker(5, { theta, n, R, seed, alpha, mode, inner }, (partial, message) => {
+    if (partial.phase === 'bootstrap') {
+      el('p5-progress-detail').textContent = `R exterior: ${partial.outerCompleted}/${partial.outerTotal} · B*: ${partial.innerCompleted}/${partial.innerTotal}`;
+      setStatus(5, 'Bootstrap paramétrico interior en curso; la página permanece disponible.');
+    } else if (partial.phase === 'calibration') {
+      el('p5-progress-detail').textContent = `Calibración pivotal: ${partial.innerCompleted}/${partial.innerTotal} · R exterior: 0/${partial.outerTotal}`;
+      setStatus(5, 'Calibrando una vez la distribución pivotal M*/M.');
+    } else if (partial.phase === 'outer') {
+      const prefix = mode === 'simulated' ? `B*: ${inner}/${inner}` : `Calibración pivotal: ${inner}/${inner}`;
+      el('p5-progress-detail').textContent = `${prefix} · R exterior: ${partial.outerCompleted}/${partial.outerTotal}`;
+      setStatus(5, 'Evaluando la frecuencia de inclusión y la longitud en muestras exteriores.');
+    }
     if (Number.isFinite(partial.exact)) showP5Partial(partial);
   }, result => {
     showP5Partial(result);
     buildP5Chart(result, confidence);
+    buildP5DemoChart(result.showcase, theta);
+    el('p5-progress-detail').textContent = mode === 'simulated'
+      ? `R exterior: ${R}/${R} · B*: ${inner}/${inner} en cada muestra`
+      : `Calibración pivotal: ${inner}/${inner} · R exterior: ${R}/${R}`;
   });
 }
 
 const runners = { 1: runP1, 2: runP2, 3: runP3, 4: runP4, 5: runP5 };
 
 function resetLab(problem) {
-  if (workers[problem]) {
-    workers[problem].terminate();
-    workers[problem] = null;
-    buttonBusy(problem, false);
-  }
+  stopWorker(problem);
   Object.entries(defaults[problem]).forEach(([id, value]) => {
     el(id).value = value;
     el(id).dispatchEvent(new Event('input', { bubbles: true }));
-    el(id).dispatchEvent(new Event('change', { bubbles: true }));
   });
+  if (problem === 5) updateP5ModeControls(false);
   reportError(problem);
   setProgress(problem, 0);
-  setStatus(problem, 'Valores predeterminados restablecidos.');
-  runners[problem]();
+  clearLabOutputs(problem);
+  setStatus(problem, 'Valores predeterminados restablecidos');
 }
 
 function setupTabs() {
@@ -566,11 +702,25 @@ function setupBindings() {
   bindRange('p5-inner', 'p5-inner-out');
 
   el('p5-mode').addEventListener('change', () => {
-    const nested = el('p5-mode').value === 'nested';
-    el('p5-inner').disabled = !nested;
-    el('p5-inner-label').classList.toggle('disabled-control', !nested);
+    stopWorker(5);
+    updateP5ModeControls(true);
+    reportError(5);
+    setProgress(5, 0);
+    clearLabOutputs(5);
+    setStatus(5, 'Modo actualizado; listo para ejecutar');
   });
-  el('p5-mode').dispatchEvent(new Event('change'));
+  updateP5ModeControls(false);
+
+  const updateP3Variance = () => {
+    const a = num('p3-a');
+    const b = num('p3-b');
+    const probability = num('p3-prob');
+    if (!(b > a)) return;
+    el('p3-var').textContent = fmt(probability * (1 - probability) * (b - a) ** 2);
+    el('p3-bound').textContent = fmt((b - a) ** 2 / 4);
+    buildP3VarianceChart(a, b, probability);
+  };
+  ['p3-a', 'p3-b', 'p3-prob'].forEach(id => el(id).addEventListener('input', updateP3Variance));
 
   document.querySelectorAll('.new-seed').forEach(button => {
     button.addEventListener('click', () => {
@@ -586,5 +736,14 @@ function setupBindings() {
 
 window.addEventListener('DOMContentLoaded', () => {
   setupBindings();
-  [runP1, runP2, runP3, runP4, runP5].forEach((runner, index) => setTimeout(runner, 450 + index * 550));
+  for (let problem = 1; problem <= 5; problem++) {
+    clearLabOutputs(problem);
+    setProgress(problem, 0);
+    setStatus(problem, 'Listo para ejecutar');
+  }
+  updateP5ModeControls(false);
+});
+
+window.addEventListener('beforeunload', () => {
+  Object.keys(workers).forEach(problem => stopWorker(Number(problem)));
 });

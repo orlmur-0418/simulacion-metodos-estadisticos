@@ -240,69 +240,155 @@ function simulateP4(jobId, params) {
   postMessage({ type: 'result', jobId, problem: 4, result: { stats, samples, mseCurve, theta: params.theta } });
 }
 
+function paretoSample(scale, n, random, keepValues = false) {
+  let minimum = Infinity;
+  const sample = keepValues ? [] : null;
+  for (let index = 0; index < n; index++) {
+    const value = scale / Math.max(random(), Number.MIN_VALUE);
+    minimum = Math.min(minimum, value);
+    if (sample) sample.push(value);
+  }
+  return { minimum, sample };
+}
+
+function p5Intervals(minimum, alpha, n, qLow, qHigh, ratioLow, ratioHigh) {
+  return {
+    exact: {
+      lo: minimum * Math.pow(alpha / 2, 1 / n),
+      hi: minimum * Math.pow(1 - alpha / 2, 1 / n)
+    },
+    percentile: { lo: qLow, hi: qHigh },
+    basic: { lo: 2 * minimum - qHigh, hi: 2 * minimum - qLow },
+    pivotal: { lo: minimum / ratioHigh, hi: minimum / ratioLow }
+  };
+}
+
 function simulateP5(jobId, params) {
   const random = mulberry32(params.seed);
-  const innerCount = params.mode === 'nested' ? params.inner : 0;
-  const total = params.B + innerCount;
-  let ratioLow;
-  let ratioHigh;
-  if (params.mode === 'nested') {
-    const ratios = [];
-    const innerBatch = 200;
+  const methods = ['exact', 'percentile', 'basic', 'pivotal'];
+  const counts = Object.fromEntries(methods.map(method => [method, 0]));
+  const lengths = Object.fromEntries(methods.map(method => [method, 0]));
+  const total = params.mode === 'simulated'
+    ? params.R * (params.inner + 1)
+    : params.inner + params.R;
+  const outerReportStep = Math.max(1, Math.floor(params.R / 100));
+  let showcase = null;
+  let calibratedRatios = null;
+  let calibratedLow = null;
+  let calibratedHigh = null;
+
+  if (params.mode === 'accelerated') {
+    calibratedRatios = [];
+    const calibrationReportStep = Math.max(100, Math.floor(params.inner / 20));
     for (let index = 0; index < params.inner; index++) {
       if (cancelled(jobId)) return;
-      ratios.push(Math.pow(Math.max(random(), Number.MIN_VALUE), -1 / params.n));
-      if ((index + 1) % innerBatch === 0 || index + 1 === params.inner) {
-        postProgress(jobId, index + 1, total, { phase: 'inner' });
+      calibratedRatios.push(paretoSample(1, params.n, random).minimum);
+      if ((index + 1) % calibrationReportStep === 0 || index + 1 === params.inner) {
+        postProgress(jobId, index + 1, total, {
+          phase: 'calibration',
+          innerCompleted: index + 1,
+          innerTotal: params.inner,
+          outerTotal: params.R
+        });
       }
     }
-    ratios.sort((a, b) => a - b);
-    ratioLow = sampleQuantile(ratios, params.alpha / 2);
-    ratioHigh = sampleQuantile(ratios, 1 - params.alpha / 2);
-  } else {
-    ratioLow = Math.pow(1 - params.alpha / 2, -1 / params.n);
-    ratioHigh = Math.pow(params.alpha / 2, -1 / params.n);
+    calibratedRatios.sort((a, b) => a - b);
+    calibratedLow = sampleQuantile(calibratedRatios, params.alpha / 2);
+    calibratedHigh = sampleQuantile(calibratedRatios, 1 - params.alpha / 2);
   }
 
-  let exact = 0;
-  let percentile = 0;
-  let basic = 0;
-  let pivotal = 0;
-  const batch = 500;
-  for (let replicate = 0; replicate < params.B; replicate++) {
+  for (let replicate = 0; replicate < params.R; replicate++) {
     if (cancelled(jobId)) return;
-    const maximumUniform = Math.pow(Math.max(random(), Number.MIN_VALUE), 1 / params.n);
-    const minimum = params.theta / maximumUniform;
-    const exactLow = minimum * Math.pow(params.alpha / 2, 1 / params.n);
-    const exactHigh = minimum * Math.pow(1 - params.alpha / 2, 1 / params.n);
-    const percentileLow = minimum * ratioLow;
-    const percentileHigh = minimum * ratioHigh;
-    const basicLow = 2 * minimum - percentileHigh;
-    const basicHigh = 2 * minimum - percentileLow;
-    const pivotalLow = minimum / ratioHigh;
-    const pivotalHigh = minimum / ratioLow;
-    exact += exactLow <= params.theta && params.theta <= exactHigh ? 1 : 0;
-    percentile += percentileLow <= params.theta && params.theta <= percentileHigh ? 1 : 0;
-    basic += basicLow <= params.theta && params.theta <= basicHigh ? 1 : 0;
-    pivotal += pivotalLow <= params.theta && params.theta <= pivotalHigh ? 1 : 0;
-    if ((replicate + 1) % batch === 0 || replicate + 1 === params.B) {
-      const completed = innerCount + replicate + 1;
+    const original = paretoSample(params.theta, params.n, random, replicate === 0);
+    const minimum = original.minimum;
+    let bootstrapMinima;
+    let qLow;
+    let qHigh;
+    let ratioLow;
+    let ratioHigh;
+
+    if (params.mode === 'simulated') {
+      bootstrapMinima = [];
+      const reportThisOuter = replicate === 0 || (replicate + 1) % outerReportStep === 0 || replicate + 1 === params.R;
+      const innerReportStep = Math.max(50, Math.floor(params.inner / 4));
+      for (let innerIndex = 0; innerIndex < params.inner; innerIndex++) {
+        if (cancelled(jobId)) return;
+        bootstrapMinima.push(paretoSample(minimum, params.n, random).minimum);
+        if (reportThisOuter && ((innerIndex + 1) % innerReportStep === 0 || innerIndex + 1 === params.inner)) {
+          const completed = replicate * (params.inner + 1) + 1 + innerIndex + 1;
+          postProgress(jobId, completed, total, {
+            phase: 'bootstrap',
+            outerCompleted: replicate,
+            outerTotal: params.R,
+            innerCompleted: innerIndex + 1,
+            innerTotal: params.inner
+          });
+        }
+      }
+      bootstrapMinima.sort((a, b) => a - b);
+      qLow = sampleQuantile(bootstrapMinima, params.alpha / 2);
+      qHigh = sampleQuantile(bootstrapMinima, 1 - params.alpha / 2);
+      ratioLow = qLow / minimum;
+      ratioHigh = qHigh / minimum;
+    } else {
+      ratioLow = calibratedLow;
+      ratioHigh = calibratedHigh;
+      qLow = minimum * ratioLow;
+      qHigh = minimum * ratioHigh;
+      if (replicate === 0) {
+        bootstrapMinima = calibratedRatios.slice(0, 2000).map(ratio => minimum * ratio);
+      }
+    }
+
+    const intervals = p5Intervals(minimum, params.alpha, params.n, qLow, qHigh, ratioLow, ratioHigh);
+    for (const method of methods) {
+      const interval = intervals[method];
+      counts[method] += interval.lo <= params.theta && params.theta <= interval.hi ? 1 : 0;
+      lengths[method] += interval.hi - interval.lo;
+    }
+    if (replicate === 0) {
+      showcase = {
+        sample: original.sample,
+        minimum,
+        bootstrapMinima: bootstrapMinima.slice(0, 2000),
+        qLow,
+        qHigh,
+        intervals
+      };
+    }
+
+    if ((replicate + 1) % outerReportStep === 0 || replicate + 1 === params.R) {
       const denominator = replicate + 1;
+      const completed = params.mode === 'simulated'
+        ? (replicate + 1) * (params.inner + 1)
+        : params.inner + replicate + 1;
       postProgress(jobId, completed, total, {
         phase: 'outer',
-        exact: exact / denominator,
-        percentile: percentile / denominator,
-        basic: basic / denominator,
-        pivotal: pivotal / denominator
+        outerCompleted: denominator,
+        outerTotal: params.R,
+        exact: counts.exact / denominator,
+        percentile: counts.percentile / denominator,
+        basic: counts.basic / denominator,
+        pivotal: counts.pivotal / denominator,
+        lenExact: lengths.exact / denominator,
+        lenPercentile: lengths.percentile / denominator,
+        lenBasic: lengths.basic / denominator,
+        lenPivotal: lengths.pivotal / denominator
       });
     }
   }
+
   postMessage({ type: 'result', jobId, problem: 5, result: {
-    exact: exact / params.B,
-    percentile: percentile / params.B,
-    basic: basic / params.B,
-    pivotal: pivotal / params.B,
-    mode: params.mode
+    exact: counts.exact / params.R,
+    percentile: counts.percentile / params.R,
+    basic: counts.basic / params.R,
+    pivotal: counts.pivotal / params.R,
+    lenExact: lengths.exact / params.R,
+    lenPercentile: lengths.percentile / params.R,
+    lenBasic: lengths.basic / params.R,
+    lenPivotal: lengths.pivotal / params.R,
+    mode: params.mode,
+    showcase
   } });
 }
 
