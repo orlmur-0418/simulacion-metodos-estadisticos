@@ -32,28 +32,43 @@ const intervalPlugin = {
     ctx.save();
     chart.$intervals.forEach((interval, index) => {
       const py = y.getPixelForValue(index + 1);
-      const color = interval.hit ? palette.blue700 : palette.cyan400;
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.lineWidth = 2.2;
       ctx.globalAlpha = 1;
       ctx.setLineDash(interval.hit ? [] : [5, 4]);
-      ctx.beginPath();
-      ctx.moveTo(x.getPixelForValue(interval.lo), py);
-      ctx.lineTo(x.getPixelForValue(interval.hi), py);
-      ctx.stroke();
+      const drawInterval = () => {
+        ctx.beginPath();
+        ctx.moveTo(x.getPixelForValue(interval.lo), py);
+        ctx.lineTo(x.getPixelForValue(interval.hi), py);
+        ctx.stroke();
+      };
+      if (interval.hit) {
+        ctx.strokeStyle = palette.blue700;
+        ctx.lineWidth = 2.2;
+        drawInterval();
+      } else {
+        ctx.strokeStyle = palette.navy800;
+        ctx.lineWidth = 4;
+        drawInterval();
+        ctx.strokeStyle = palette.cyan400;
+        ctx.lineWidth = 2;
+        drawInterval();
+      }
       ctx.setLineDash([]);
       const center = x.getPixelForValue((interval.lo + interval.hi) / 2);
       if (interval.hit) {
+        ctx.fillStyle = palette.blue700;
         ctx.beginPath();
         ctx.arc(center, py, 3.2, 0, Math.PI * 2);
         ctx.fill();
       } else {
+        ctx.fillStyle = palette.cyan400;
         ctx.fillRect(center - 3.5, py - 3.5, 7, 7);
         ctx.strokeStyle = palette.navy900;
         ctx.lineWidth = 1;
         ctx.strokeRect(center - 3.5, py - 3.5, 7, 7);
       }
+      ctx.setLineDash([]);
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 1;
     });
     if (Number.isFinite(chart.$theta)) {
       const px = x.getPixelForValue(chart.$theta);
@@ -66,6 +81,9 @@ const intervalPlugin = {
       ctx.lineTo(px, chart.chartArea.bottom);
       ctx.stroke();
     }
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 1;
     ctx.restore();
   }
 };

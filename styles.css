@@ -160,8 +160,13 @@ button, input, select { font: inherit; }
 .legend-key { position: relative; display: inline-block; width: 28px; height: 10px; margin: 0 6px 0 13px; vertical-align: middle; border-top: 3px solid var(--blue-700); }
 .legend-key:first-child { margin-left: 0; }
 .legend-key.hit::after { content: ''; position: absolute; left: 11px; top: -6px; width: 7px; height: 7px; border: 2px solid var(--cyan-50); border-radius: 50%; background: var(--blue-700); }
-.legend-key.miss { border-top: 3px dashed var(--cyan-400); }
-.legend-key.miss::after { content: ''; position: absolute; left: 11px; top: -6px; width: 7px; height: 7px; border: 1px solid var(--navy-900); background: var(--cyan-400); }
+.legend-key.miss {
+  border-top: 0;
+  background:
+    repeating-linear-gradient(90deg, var(--cyan-400) 0 6px, transparent 6px 10px) 0 1px / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, var(--navy-800) 0 6px, transparent 6px 10px) 0 0 / 100% 4px no-repeat;
+}
+.legend-key.miss::after { content: ''; position: absolute; left: 11px; top: -3px; width: 7px; height: 7px; border: 1px solid var(--navy-900); background: var(--cyan-400); }
 .legend-key.truth, .legend-key.target { height: 10px; border: 1px solid var(--cyan-200); border-top: 3px dashed var(--navy-900); background: var(--cyan-50); }
 [data-lab="3"] .legend-key.truth { border: 0; border-top: 3px solid var(--blue-700); background: transparent; }
 [data-lab="5"] .legend-key.target { border-top-color: var(--blue-700); }
