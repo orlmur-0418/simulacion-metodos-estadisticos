@@ -1,0 +1,11 @@
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+__pycache__/
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+Thumbs.db
