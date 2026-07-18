@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Actividad Evaluativa III: desarrollo metodológico y cinco laboratorios interactivos de inferencia estadística." />
-  <title>Inferencia Estadística Interactiva</title>
+  <meta name="description" content="Actividad Evaluativa III: desarrollo teórico y simulación de cinco problemas de inferencia estadística." />
+  <title>Actividad Evaluativa III | Inferencia Estadística</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="styles.css" />
   <script>
@@ -22,32 +22,33 @@
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="#inicio" aria-label="Ir al inicio">
-      <span class="brand-mark">Σ</span><span>Inferencia Interactiva</span>
+      <span class="brand-mark">Σ</span><span>Inferencia Estadística</span>
     </a>
     <nav class="topnav" aria-label="Navegación principal">
       <a href="#problemas">Problemas</a>
       <a href="#metodologia">Metodología</a>
-      <a class="button button-small" href="actividad_evaluativa_III_Orlain_Murillo.pdf" target="_blank" rel="noopener">Ver PDF</a>
+      <a class="button button-small" href="actividad_evaluativa_III_Orlain_Murillo.pdf" target="_blank" rel="noopener">Documento PDF</a>
     </nav>
   </header>
 
   <main>
     <section id="inicio" class="hero">
       <div class="hero-copy">
-        <span class="eyebrow">Actividad Evaluativa III · Métodos Estadísticos</span>
-        <h1>La teoría se demuestra.<br><span>La simulación la hace visible.</span></h1>
-        <p>Cinco problemas desarrollados desde el fundamento probabilístico hasta su verificación Monte Carlo. Cada laboratorio separa la pregunta, los controles, el cálculo y la lectura de resultados.</p>
+        <span class="eyebrow">Universidad del Valle · Actividad Evaluativa III</span>
+        <h1>Inferencia estadística:<br><span>desarrollo teórico y simulación</span></h1>
+        <p>Este sitio presenta la solución de cinco problemas del taller. Cada sección incluye el desarrollo matemático, los resultados de referencia y una simulación interactiva para modificar parámetros, ejecutar réplicas Monte Carlo y analizar los resultados obtenidos.</p>
         <div class="hero-actions">
-          <a class="button" href="#problemas">Explorar soluciones</a>
-          <a class="button button-ghost" href="actividad_evaluativa_III_Orlain_Murillo.pdf" target="_blank" rel="noopener">Abrir documento definitivo</a>
+          <a class="button" href="#problemas">Consultar problemas</a>
+          <a class="button button-ghost" href="actividad_evaluativa_III_Orlain_Murillo.pdf" target="_blank" rel="noopener">Abrir solución en PDF</a>
         </div>
         <div class="definition-callout">
-          <strong>Probabilidad de cobertura:</strong> probabilidad de que el intervalo construido contenga el verdadero valor del parámetro al repetir el procedimiento de muestreo.
+          <strong>Estructura de cada problema</strong>
+          <span>Desarrollo teórico · procedimiento de simulación · resultados de referencia · simulación interactiva.</span>
         </div>
         <div class="hero-meta">
-          <div><strong>5</strong><span>desarrollos completos</span></div>
-          <div><strong>5</strong><span>laboratorios</span></div>
-          <div><strong>1966</strong><span>semilla inicial</span></div>
+          <div><strong>5</strong><span>Problemas resueltos</span></div>
+          <div><strong>5</strong><span>Simulaciones interactivas</span></div>
+          <div><strong>1966</strong><span>Semilla predeterminada</span></div>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -59,15 +60,16 @@
       </div>
     </section>
 
-    <section id="problemas" class="section section-intro">
-      <span class="eyebrow">Contenido</span>
-      <h2>Cinco preguntas, cinco ideas estadísticas</h2>
+    <section id="problemas" class="section section-intro" aria-label="Problemas del taller">
+      <span class="eyebrow">Contenido del taller</span>
+      <h2>Problemas</h2>
+      <p class="section-description">Cada problema incluye el desarrollo teórico, el procedimiento de simulación, los resultados de referencia y una simulación interactiva.</p>
       <div class="problem-grid">
-        <a class="problem-card" href="#p1"><span>01</span><h3>Intervalo exponencial</h3><p>Cantidad pivotal, probabilidad de cobertura y EMV.</p></a>
-        <a class="problem-card" href="#p2"><span>02</span><h3>Tamaño muestral</h3><p>Normal, binomial exacta y Monte Carlo.</p></a>
-        <a class="problem-card" href="#p3"><span>03</span><h3>Variables acotadas</h3><p>Cota de varianza y dos intervalos.</p></a>
-        <a class="problem-card" href="#p4"><span>04</span><h3>Estimadores</h3><p>Momentos, EMV, sesgo, varianza y ECM.</p></a>
-        <a class="problem-card" href="#p5"><span>05</span><h3>Bootstrap paramétrico</h3><p>Exacto, percentil, básico y pivotal.</p></a>
+        <a class="problem-card" href="#p1"><span>PROBLEMA 1</span><h3>Intervalo exacto para una tasa exponencial</h3><p>Cantidad pivotal, EMV y evaluación de la probabilidad de cobertura.</p></a>
+        <a class="problem-card" href="#p2"><span>PROBLEMA 2</span><h3>Tamaño muestral para una proporción</h3><p>Aproximación normal, cálculo binomial exacto y verificación Monte Carlo.</p></a>
+        <a class="problem-card" href="#p3"><span>PROBLEMA 3</span><h3>Variables aleatorias acotadas</h3><p>Cota de varianza e intervalos conservador y de Hoeffding.</p></a>
+        <a class="problem-card" href="#p4"><span>PROBLEMA 4</span><h3>Comparación de estimadores</h3><p>Método de momentos, EMV, sesgo, varianza y error cuadrático medio.</p></a>
+        <a class="problem-card" href="#p5"><span>PROBLEMA 5</span><h3>Bootstrap paramétrico</h3><p>Intervalo exacto y métodos percentil, básico y pivotal.</p></a>
       </div>
     </section>
 
@@ -75,8 +77,8 @@
       <div class="section-number">01</div>
       <div class="problem-heading">
         <span class="eyebrow">Distribución exponencial</span>
-        <h2>Intervalo exacto para la tasa \(\theta\)</h2>
-        <p>La <strong>probabilidad de cobertura</strong> —la proporción de intervalos que contienen el parámetro verdadero— permite comprobar si el intervalo exacto conserva el nivel de confianza anunciado.</p>
+        <h2>Intervalo exacto para la tasa exponencial</h2>
+        <p>Se deriva un intervalo exacto para \(\theta\) y se evalúa su <strong>probabilidad de cobertura</strong>, es decir, la proporción de intervalos que contienen el parámetro verdadero, junto con su longitud y el comportamiento del EMV.</p>
       </div>
 
       <article class="solution-card">
@@ -107,20 +109,20 @@
             <div class="math-block">\[\widehat C_B=\frac1B\sum_{b=1}^B I_b,\qquad \operatorname{EMC}(\widehat C_B)\approx\sqrt{\frac{\widehat C_B(1-\widehat C_B)}{B}}.\]</div>
             <ol class="steps"><li>Fijar \(\theta,n,1-\alpha,B\) y la semilla.</li><li>Generar \(n\) exponenciales y sumar.</li><li>Construir el intervalo exacto y calcular el EMV.</li><li>Acumular cobertura, longitud, sesgo y ECM.</li></ol>
             <div class="reference-report"><strong>Reporte definitivo · \(\theta=2,n=30,B=50\,000\), confianza 95 %, semilla 1966.</strong><span>94.948 % de cobertura; error Monte Carlo 0.098 puntos porcentuales; longitud media 1.4764; sesgo del EMV 0.0689; ECM del EMV 0.1584.</span></div>
-            <p>Los primeros 100 intervalos del gráfico son ilustrativos; el reporte numérico usa las 50 000 réplicas. Azul verdoso significa que el intervalo contiene a \(\theta\), rosado que no lo contiene y la línea azul marca el valor verdadero.</p>
+            <p>Los primeros 100 intervalos del gráfico son ilustrativos; el reporte numérico usa las 50 000 réplicas. Los intervalos con cobertura se representan mediante línea continua y marcador circular; los que no contienen a \(\theta\), mediante línea discontinua y marcador cuadrado. La línea vertical discontinua marca el valor verdadero.</p>
           </div>
         </details>
       </article>
 
       <div class="lab" data-lab="1">
         <div class="lab-head">
-          <div><span class="live-dot"></span><span class="eyebrow">Laboratorio en vivo</span><h3>Intervalos exactos para una tasa exponencial</h3></div>
+          <div><span class="live-dot"></span><span class="eyebrow">Simulación interactiva</span><h3>Intervalos exactos para una tasa exponencial</h3></div>
           <div class="lab-actions"><button class="button button-ghost reset-button" data-reset="1" type="button">Restablecer valores</button><button class="button run-button" id="run-p1" type="button">Ejecutar</button></div>
         </div>
-        <details class="lab-guide" open><summary>Cómo usar este laboratorio</summary><div class="guide-grid">
-          <div><strong>Pregunta</strong><p>¿El intervalo exacto contiene a la tasa verdadera con la frecuencia nominal?</p></div>
-          <div><strong>Entradas</strong><p>\(\theta\) fija la tasa; \(n\) controla la información; la confianza modifica el ancho; \(B\) reduce el error Monte Carlo al crecer; la semilla reproduce la realización.</p></div>
-          <div><strong>Ejecución</strong><p>En cada réplica se generan \(n\) exponenciales, se calcula \(S\), el intervalo exacto y el EMV \(n/S\).</p></div>
+        <details class="lab-guide" open><summary>Guía del simulador</summary><div class="guide-grid">
+          <div><strong>Objetivo</strong><p>Evaluar si el intervalo exacto contiene a la tasa verdadera con una frecuencia próxima al nivel nominal.</p></div>
+          <div><strong>Parámetros</strong><p>\(\theta\) fija la tasa; \(n\) controla la información; la confianza modifica el ancho; \(B\) reduce el error Monte Carlo al crecer; la semilla reproduce la realización.</p></div>
+          <div><strong>Procedimiento</strong><p>En cada réplica se generan \(n\) exponenciales, se calcula \(S\), el intervalo exacto y el EMV \(n/S\).</p></div>
           <div><strong>Resultados</strong><p>Las \(B\) réplicas producen porcentaje de inclusión, error Monte Carlo, longitud, sesgo y ECM; solo las primeras cien se dibujan.</p></div>
           <div><strong>Interpretación</strong><p>Compare el porcentaje que contiene a \(\theta\) con el nominal. Los cien segmentos ilustran el mecanismo; las métricas usan todas las \(B\) réplicas.</p></div>
         </div></details>
@@ -153,7 +155,7 @@
 
     <section id="p2" class="problem-section alt">
       <div class="section-number">02</div>
-      <div class="problem-heading"><span class="eyebrow">Proporción electoral</span><h2>¿Qué tan grande debe ser la muestra?</h2><p>La <strong>probabilidad de cobertura</strong> —la proporción de intervalos que contienen el parámetro verdadero— permite evaluar exactamente el intervalo \(\overline X\pm E\).</p></div>
+      <div class="problem-heading"><span class="eyebrow">Proporción electoral</span><h2>Tamaño muestral para estimar una proporción</h2><p>Se determina el tamaño de muestra requerido para estimar una proporción con margen y confianza especificados, y se compara la probabilidad de cobertura exacta con su estimación Monte Carlo.</p></div>
       <article class="solution-card">
         <h3>Descripción del problema</h3>
         <p>Se desea estimar la proporción \(\theta\) de votantes que apoyan al candidato A con confianza 90 % y margen \(E=0.03\), y después contrastar el cálculo usual con la distribución exacta y Monte Carlo.</p>
@@ -173,11 +175,11 @@
       </article>
 
       <div class="lab" data-lab="2">
-        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Laboratorio en vivo</span><h3>Exacta versus simulada</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="2" type="button">Restablecer valores</button><button class="button run-button" id="run-p2" type="button">Ejecutar</button></div></div>
-        <details class="lab-guide" open><summary>Cómo usar este laboratorio</summary><div class="guide-grid">
-          <div><strong>Pregunta</strong><p>¿Qué cobertura real tiene \(\overline X\pm E\) y cuánto se acerca Monte Carlo?</p></div>
-          <div><strong>Entradas</strong><p>\(n\) y \(E\) fijan el intervalo; la confianza determina los tamaños sugeridos; \(\theta\) selecciona el caso; \(B\) y la semilla controlan Monte Carlo.</p></div>
-          <div><strong>Ejecución</strong><p>Se calcula la suma binomial exacta en una malla y, de forma independiente, se simulan \(B\) conteos para el \(\theta\) seleccionado.</p></div>
+        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Simulación interactiva</span><h3>Cobertura exacta y simulada</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="2" type="button">Restablecer valores</button><button class="button run-button" id="run-p2" type="button">Ejecutar</button></div></div>
+        <details class="lab-guide" open><summary>Guía del simulador</summary><div class="guide-grid">
+          <div><strong>Objetivo</strong><p>Estimar la cobertura real de \(\overline X\pm E\) y comparar el resultado Monte Carlo con el cálculo binomial exacto.</p></div>
+          <div><strong>Parámetros</strong><p>\(n\) y \(E\) fijan el intervalo; la confianza determina los tamaños sugeridos; \(\theta\) selecciona el caso; \(B\) y la semilla controlan Monte Carlo.</p></div>
+          <div><strong>Procedimiento</strong><p>Se calcula la suma binomial exacta en una malla y, de forma independiente, se simulan \(B\) conteos para el \(\theta\) seleccionado.</p></div>
           <div><strong>Resultados</strong><p>Se muestran los tamaños normal y de Hoeffding, la probabilidad exacta, la proporción simulada, su diferencia y el error Monte Carlo.</p></div>
           <div><strong>Interpretación</strong><p>Monte Carlo verifica la suma exacta, no la sustituye. Diferencias del orden del error Monte Carlo son compatibles con el cálculo binomial.</p></div>
         </div></details>
@@ -212,7 +214,7 @@
 
     <section id="p3" class="problem-section">
       <div class="section-number">03</div>
-      <div class="problem-heading"><span class="eyebrow">Distribuciones acotadas</span><h2>La mayor varianza posible en \([a,b]\)</h2><p>La <strong>probabilidad de cobertura</strong> —la proporción de intervalos que contienen el parámetro verdadero, aquí la media \(\mu\)— se estudia separadamente de la cota de varianza.</p></div>
+      <div class="problem-heading"><span class="eyebrow">Distribuciones acotadas</span><h2>Cota de varianza e intervalos para la media</h2><p>Se demuestra una cota universal para la varianza de variables acotadas y se compara la probabilidad de cobertura de los intervalos conservador y de Hoeffding para la media \(\mu\).</p></div>
       <article class="solution-card">
         <h3>Descripción del problema</h3><p>Se demuestra una cota universal para \(\operatorname{Var}(X)\) cuando \(a\leq X\leq b\), se construye un intervalo conservador para \(\mu\) y se compara con Hoeffding.</p>
         <details class="theory" open><summary>Demostración y construcción de los intervalos</summary><div class="details-body">
@@ -231,11 +233,11 @@
       </article>
 
       <div class="lab" data-lab="3">
-        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Laboratorio en vivo</span><h3>Cota de varianza e intervalos para la media</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="3" type="button">Restablecer valores</button><button class="button run-button" id="run-p3" type="button">Ejecutar</button></div></div>
-        <details class="lab-guide" open><summary>Cómo usar este laboratorio</summary><div class="guide-grid">
-          <div><strong>Pregunta</strong><p>¿Dónde se alcanza la cota y cómo cambian cobertura y longitud según la distribución?</p></div>
-          <div><strong>Entradas</strong><p>\(a,b\) fijan el soporte; \(p\) señala un punto de la curva; distribución, \(n\), confianza, \(B\) y semilla controlan los intervalos.</p></div>
-          <div><strong>Ejecución</strong><p>La primera vista evalúa \(p(1-p)(b-a)^2\); el worker genera medias de la distribución elegida y construye ambos intervalos.</p></div>
+        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Simulación interactiva</span><h3>Cota de varianza e intervalos para la media</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="3" type="button">Restablecer valores</button><button class="button run-button" id="run-p3" type="button">Ejecutar</button></div></div>
+        <details class="lab-guide" open><summary>Guía del simulador</summary><div class="guide-grid">
+          <div><strong>Objetivo</strong><p>Identificar dónde se alcanza la cota y analizar cómo cambian la cobertura y la longitud según la distribución.</p></div>
+          <div><strong>Parámetros</strong><p>\(a,b\) fijan el soporte; \(p\) señala un punto de la curva; distribución, \(n\), confianza, \(B\) y semilla controlan los intervalos.</p></div>
+          <div><strong>Procedimiento</strong><p>La primera vista evalúa \(p(1-p)(b-a)^2\); el worker genera medias de la distribución elegida y construye ambos intervalos.</p></div>
           <div><strong>Resultados</strong><p>Se reportan la varianza seleccionada, la cota, el porcentaje que contiene a \(\mu\) y la longitud promedio de cada método.</p></div>
           <div><strong>Interpretación</strong><p>Dos puntos alcanza el máximo en \(p=0.5\); distribuciones concentradas pueden sobrecubrir y Hoeffding suele ser más largo.</p></div>
         </div></details>
@@ -272,7 +274,7 @@
 
     <section id="p4" class="problem-section alt">
       <div class="section-number">04</div>
-      <div class="problem-heading"><span class="eyebrow">Estimación paramétrica</span><h2>Momentos, EMV y corrección de sesgo</h2><p>Para \(f(x;\theta)=(\theta+1)x^\theta\), se comparan tres estimadores mediante sesgo, varianza y error cuadrático medio.</p></div>
+      <div class="problem-heading"><span class="eyebrow">Estimación paramétrica</span><h2>Estimación por momentos y máxima verosimilitud</h2><p>Para \(f(x;\theta)=(\theta+1)x^\theta\), se derivan los estimadores por momentos, EMV y EMV corregido, y se comparan mediante sesgo, varianza y error cuadrático medio.</p></div>
       <article class="solution-card">
         <h3>Descripción del problema</h3><p>Se obtienen los estimadores por momentos y EMV, se estudian sesgo, consistencia y eficiencia, y se verifica su comportamiento con tamaños de muestra crecientes.</p>
         <details class="theory" open><summary>Derivación de los estimadores y propiedades</summary><div class="details-body">
@@ -294,11 +296,11 @@
       </article>
 
       <div class="lab" data-lab="4">
-        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Laboratorio en vivo</span><h3>Distribución y evolución del ECM</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="4" type="button">Restablecer valores</button><button class="button run-button" id="run-p4" type="button">Ejecutar</button></div></div>
-        <details class="lab-guide" open><summary>Cómo usar este laboratorio</summary><div class="guide-grid">
-          <div><strong>Pregunta</strong><p>¿Qué estimador queda más cerca de \(\theta\) y cómo cambia su ECM cuando crece \(n\)?</p></div>
-          <div><strong>Entradas</strong><p>\(\theta\) fija el modelo; \(n\) controla la vista empírica; \(B\) estabiliza las métricas y la semilla reproduce las mismas réplicas.</p></div>
-          <div><strong>Ejecución</strong><p>Cada muestra usa \(X=U^{1/(\theta+1)}\); los tres estimadores se calculan sobre esa misma muestra para compararlos justamente.</p></div>
+        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Simulación interactiva</span><h3>Distribución y evolución del ECM</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="4" type="button">Restablecer valores</button><button class="button run-button" id="run-p4" type="button">Ejecutar</button></div></div>
+        <details class="lab-guide" open><summary>Guía del simulador</summary><div class="guide-grid">
+          <div><strong>Objetivo</strong><p>Comparar la proximidad de los estimadores a \(\theta\) y examinar cómo cambia su ECM cuando aumenta \(n\).</p></div>
+          <div><strong>Parámetros</strong><p>\(\theta\) fija el modelo; \(n\) controla la vista empírica; \(B\) estabiliza las métricas y la semilla reproduce las mismas réplicas.</p></div>
+          <div><strong>Procedimiento</strong><p>Cada muestra usa \(X=U^{1/(\theta+1)}\); los tres estimadores se calculan sobre esa misma muestra para compararlos bajo las mismas condiciones.</p></div>
           <div><strong>Resultados</strong><p>La tabla presenta sesgo, varianza, sesgo² + varianza y ECM; la segunda fase repite el ECM para \(n=5,10,20,40,80,150\).</p></div>
           <div><strong>Interpretación</strong><p>Más centrada significa menor sesgo; más estrecha, menor varianza; una curva de ECM más baja, menor error global. Compruebe la identidad numérica.</p></div>
         </div></details>
@@ -316,7 +318,7 @@
             <div class="metrics three"><div class="metric"><span>Menor sesgo absoluto</span><strong id="p4-best-bias">—</strong><small>Media más cercana a \(\theta\).</small></div><div class="metric"><span>Menor varianza</span><strong id="p4-best-var">—</strong><small>Menor dispersión.</small></div><div class="metric"><span>Menor ECM</span><strong id="p4-best-mse">—</strong><small>Mejor precisión global.</small></div></div>
             <div class="table-wrap"><table><thead><tr><th>Estimador</th><th>Sesgo</th><th>Varianza</th><th>Sesgo² + Var.</th><th>ECM</th></tr></thead><tbody id="p4-table"></tbody></table></div>
             <div class="tabs" role="tablist" aria-label="Vistas del problema 4"><button class="tab-button active" data-tab="p4-dist-panel" role="tab" aria-selected="true" type="button">Distribución empírica</button><button class="tab-button" data-tab="p4-mse-panel" role="tab" aria-selected="false" type="button">ECM según n</button></div>
-            <div id="p4-dist-panel" class="tab-panel active" role="tabpanel"><div class="chart-card"><canvas id="p4-dist-chart" aria-label="Distribución empírica de los estimadores" role="img"></canvas></div><p class="chart-note">La línea rosada marca \(\theta\). Una curva estrecha y centrada indica baja varianza y poco sesgo.</p></div>
+            <div id="p4-dist-panel" class="tab-panel active" role="tabpanel"><div class="chart-card"><canvas id="p4-dist-chart" aria-label="Distribución empírica de los estimadores" role="img"></canvas></div><p class="chart-note">La línea vertical azul oscuro y discontinua marca \(\theta\). Las series se diferencian mediante trazos y marcadores; una curva estrecha y centrada indica baja varianza y poco sesgo.</p></div>
             <div id="p4-mse-panel" class="tab-panel" role="tabpanel" hidden><div class="chart-card"><canvas id="p4-mse-chart" aria-label="Evolución del ECM por tamaño de muestra" role="img"></canvas></div><p class="chart-note">Se comparan \(n=5,10,20,40,80,150\). Una curva más baja representa menor error cuadrático medio.</p></div>
           </div>
         </div>
@@ -325,7 +327,7 @@
 
     <section id="p5" class="problem-section">
       <div class="section-number">05</div>
-      <div class="problem-heading"><span class="eyebrow">Soporte dependiente del parámetro</span><h2>Cuando el bootstrap automático falla</h2><p>La <strong>probabilidad de cobertura</strong> —la proporción de intervalos que contienen el parámetro verdadero— revela por qué el percentil puede fallar y el pivotal sí reproduce el intervalo exacto.</p></div>
+      <div class="problem-heading"><span class="eyebrow">Soporte dependiente del parámetro</span><h2>Intervalo exacto y bootstrap paramétrico</h2><p>Se construye un intervalo exacto a partir del mínimo muestral y se comparan los métodos bootstrap percentil, básico y pivotal mediante probabilidad de cobertura y longitud promedio.</p></div>
       <article class="solution-card">
         <h3>Descripción del problema</h3><p>Para \(f(x;\theta)=\theta/x^2\), \(x\geq\theta\), se construye un intervalo exacto a partir del mínimo y se comparan tres variantes del bootstrap paramétrico.</p>
         <details class="theory" open><summary>Intervalo exacto, EMV y condición n &gt; 1</summary><div class="details-body">
@@ -346,11 +348,11 @@
       </article>
 
       <div class="lab" data-lab="5">
-        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Laboratorio en vivo</span><h3>Cuatro intervalos para un modelo no regular</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="5" type="button">Restablecer valores</button><button class="button run-button" id="run-p5" type="button">Ejecutar</button></div></div>
-        <details class="lab-guide" open><summary>Cómo usar este laboratorio</summary><div class="guide-grid">
-          <div><strong>Pregunta</strong><p>¿Qué métodos contienen a \(\theta\) con la frecuencia nominal cuando el soporte depende del parámetro?</p></div>
-          <div><strong>Entradas</strong><p>\(\theta,n\) y confianza fijan el modelo; \(R\) evalúa desempeño; \(B^*\) aproxima cuantiles; el modo decide si se recalibran por muestra o una sola vez.</p></div>
-          <div><strong>Ejecución</strong><p>El worker genera muestras exteriores y bootstrap desde \(f(x;M)\), obtiene \(M^*\) y construye exacto, percentil, básico y pivotal.</p></div>
+        <div class="lab-head"><div><span class="live-dot"></span><span class="eyebrow">Simulación interactiva</span><h3>Cuatro intervalos para un modelo no regular</h3></div><div class="lab-actions"><button class="button button-ghost reset-button" data-reset="5" type="button">Restablecer valores</button><button class="button run-button" id="run-p5" type="button">Ejecutar</button></div></div>
+        <details class="lab-guide" open><summary>Guía del simulador</summary><div class="guide-grid">
+          <div><strong>Objetivo</strong><p>Comparar qué métodos contienen a \(\theta\) con una frecuencia próxima al nivel nominal cuando el soporte depende del parámetro.</p></div>
+          <div><strong>Parámetros</strong><p>\(\theta,n\) y confianza fijan el modelo; \(R\) evalúa desempeño; \(B^*\) aproxima cuantiles; el modo decide si se recalibran por muestra o una sola vez.</p></div>
+          <div><strong>Procedimiento</strong><p>El worker genera muestras exteriores y bootstrap desde \(f(x;M)\), obtiene \(M^*\) y construye los intervalos exacto, percentil, básico y pivotal.</p></div>
           <div><strong>Resultados</strong><p>La primera vista documenta una muestra, su histograma de \(M^*\), cuantiles e intervalos; la segunda reporta inclusión y longitud promedio.</p></div>
           <div><strong>Interpretación</strong><p>Percentil falla estructuralmente; básico refleja \(M^*-M\) y puede ser conservador; pivotal respeta la escala; exacto es la referencia.</p></div>
         </div></details>
@@ -403,9 +405,9 @@
     </section>
 
     <section id="metodologia" class="section methodology">
-      <span class="eyebrow">Método común</span><h2>Qué hace válida una simulación</h2>
-      <div class="method-grid"><div><span>01</span><h3>Modelo</h3><p>Se deriva la distribución o transformación que genera datos con el parámetro fijado.</p></div><div><span>02</span><h3>Estadístico</h3><p>Cada réplica calcula exactamente el intervalo o estimador deducido en la teoría.</p></div><div><span>03</span><h3>Repetición</h3><p>La semilla 1966 reproduce la secuencia; una nueva semilla permite evaluar variación Monte Carlo.</p></div><div><span>04</span><h3>Lectura</h3><p>Cobertura, sesgo, varianza, ECM y longitud responden preguntas distintas y deben interpretarse juntas.</p></div></div>
-      <div class="definition-callout seed-note"><strong>Nota de reproducibilidad.</strong> La semilla 1966 garantiza reproducibilidad dentro de cada implementación. Python y JavaScript utilizan generadores pseudoaleatorios diferentes, por lo que sus realizaciones particulares pueden variar, aunque los resultados estadísticos deben ser equivalentes.</div>
+      <span class="eyebrow">Metodología</span><h2>Estructura de las simulaciones</h2>
+      <div class="method-grid"><div><span>01</span><h3>Modelo probabilístico</h3><p>Se especifica la distribución utilizada para generar cada muestra.</p></div><div><span>02</span><h3>Procedimiento inferencial</h3><p>En cada réplica se calcula el estimador o intervalo derivado en la solución teórica.</p></div><div><span>03</span><h3>Repetición Monte Carlo</h3><p>El procedimiento se repite para estimar sesgo, varianza, ECM, probabilidad de cobertura o longitud promedio.</p></div><div><span>04</span><h3>Análisis de resultados</h3><p>Los resultados simulados se comparan con los valores teóricos o nominales correspondientes.</p></div></div>
+      <div class="definition-callout seed-note"><strong>Nota de reproducibilidad</strong><span>La semilla 1966 garantiza reproducibilidad dentro de cada implementación. Python y JavaScript utilizan generadores pseudoaleatorios diferentes, por lo que sus realizaciones particulares pueden variar, aunque los resultados estadísticos deben ser equivalentes.</span></div>
     </section>
   </main>
 
