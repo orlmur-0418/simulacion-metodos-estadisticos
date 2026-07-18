@@ -56,9 +56,9 @@ button, input, select { font: inherit; }
 .button:disabled { cursor: wait; opacity: .65; transform: none; }
 .button-small { padding: 9px 15px; font-size: .85rem; }
 .button-ghost { color: var(--cyan-50) !important; background: rgba(2,62,138,.52); border: 1px solid var(--cyan-200); box-shadow: none; }
-.hero { width: min(var(--max), calc(100% - 48px)); min-height: calc(100vh - 72px); margin: 0 auto; display: grid; grid-template-columns: 1.12fr .88fr; align-items: center; gap: 70px; padding: 80px 0; }
+.hero { width: min(var(--max), calc(100% - 48px)); min-height: calc(100vh - 72px); margin: 0 auto; display: grid; grid-template-columns: 1.22fr .78fr; align-items: center; gap: 50px; padding: 80px 0; }
 .eyebrow { display: inline-block; color: var(--accent); text-transform: uppercase; letter-spacing: .16em; font-weight: 800; font-size: .72rem; }
-.hero h1 { margin: 20px 0; font-size: clamp(2.8rem, 5.5vw, 5.2rem); line-height: 1.06; letter-spacing: -.035em; }
+.hero h1 { margin: 20px 0; font-size: clamp(2.8rem, 3.4vw, 3.2rem); line-height: 1.06; letter-spacing: -.035em; }
 .hero h1 span { color: var(--cyan-200); }
 .hero-copy > p { max-width: 680px; color: var(--muted); font-size: 1.15rem; }
 .definition-callout { max-width: 700px; margin-top: 26px; padding: 16px 18px; border: 1px solid rgba(144,224,239,.34); border-radius: 16px; color: var(--cyan-100); background: rgba(2,62,138,.52); }
