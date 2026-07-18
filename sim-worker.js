@@ -336,7 +336,13 @@ function simulateP5(jobId, params) {
       qLow = minimum * ratioLow;
       qHigh = minimum * ratioHigh;
       if (replicate === 0) {
-        bootstrapMinima = calibratedRatios.slice(0, 2000).map(ratio => minimum * ratio);
+        const histogramSize = Math.min(2000, calibratedRatios.length);
+        bootstrapMinima = Array.from({ length: histogramSize }, (_, index) => {
+          const ratioIndex = histogramSize === 1
+            ? 0
+            : Math.round(index * (calibratedRatios.length - 1) / (histogramSize - 1));
+          return minimum * calibratedRatios[ratioIndex];
+        });
       }
     }
 
