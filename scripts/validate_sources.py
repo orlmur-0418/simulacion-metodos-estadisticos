@@ -32,6 +32,7 @@ class SiteParser(HTMLParser):
         super().__init__()
         self.pdf_links: list[str] = []
         self.seed_values: dict[str, str] = {}
+        self.text_fragments: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
@@ -39,6 +40,10 @@ class SiteParser(HTMLParser):
             self.pdf_links.append(href)
         if tag == "input" and (input_id := attributes.get("id", "")).endswith("-seed"):
             self.seed_values[input_id] = attributes.get("value", "")
+
+    def handle_data(self, data: str) -> None:
+        if data.strip():
+            self.text_fragments.append(data)
 
 
 def fail(message: str) -> None:
@@ -53,6 +58,7 @@ def main() -> None:
 
     source_paths = [
         ROOT / "index.html",
+        ROOT / "styles.css",
         ROOT / "app.js",
         ROOT / "sim-worker.js",
         ROOT / "scripts" / "generate_figures.py",
@@ -60,6 +66,35 @@ def main() -> None:
     ]
     sources = {path: path.read_text(encoding="utf-8") for path in source_paths}
     combined = "\n".join(sources.values())
+    combined_lower = combined.casefold()
+
+    forbidden_phrases = (
+        "La teoría se demuestra",
+        "La simulación la hace visible",
+        "Cinco preguntas, cinco ideas estadísticas",
+        "Qué hace válida una simulación",
+        "Laboratorio en vivo",
+        "Cómo usar este laboratorio",
+        "Explorar soluciones",
+        "Cuando el bootstrap automático falla",
+    )
+    for phrase in forbidden_phrases:
+        if phrase.casefold() in combined_lower:
+            fail(f"Quedó una frase editorial obsoleta: {phrase}.")
+
+    legacy_colors = ("65f2c2", "88a7ff", "ffba72", "ff7f91")
+    for color in legacy_colors:
+        if color in combined_lower:
+            fail(f"Quedó un color de la paleta anterior: #{color}.")
+
+    styles = sources[ROOT / "styles.css"].casefold()
+    required_colors = (
+        "03045e", "023e8a", "0077b6", "0096c7", "00b4d8",
+        "48cae4", "90e0ef", "ade8f4", "caf0f8",
+    )
+    missing_colors = [color for color in required_colors if color not in styles]
+    if missing_colors:
+        fail(f"Faltan colores de la paleta azul en styles.css: {', '.join(missing_colors)}.")
 
     forbidden_files = ("solucion-" + "taller.pdf", "main" + ".pdf")
     forbidden_terms = (
@@ -78,6 +113,18 @@ def main() -> None:
     html = sources[ROOT / "index.html"]
     parser = SiteParser()
     parser.feed(html)
+    visible_text = " ".join(" ".join(parser.text_fragments).split()).casefold()
+    required_html_text = (
+        "Inferencia estadística: desarrollo teórico y simulación",
+        "Simulación interactiva",
+        "Guía del simulador",
+        "Estructura de las simulaciones",
+    )
+    for phrase in required_html_text:
+        if phrase.casefold() not in visible_text:
+            fail(f"Falta el texto académico requerido: {phrase}.")
+    if "problemas del taller" not in html.casefold():
+        fail("Falta la identificación de la sección Problemas del taller.")
     if not parser.pdf_links or any(link != PDF_NAME for link in parser.pdf_links):
         fail(f"Todos los enlaces PDF deben usar {PDF_NAME}.")
     expected_seed_inputs = {f"p{problem}-seed": "1966" for problem in range(1, 6)}
@@ -105,7 +152,7 @@ def main() -> None:
     if "runners[" in reset_block or "new Worker" in reset_block:
         fail("Restablecer valores no debe volver a ejecutar una simulación.")
 
-    print("Validación de archivos, enlaces, semillas, terminología y carga bajo demanda: correcta.")
+    print("Validación de redacción, paleta, archivos, enlaces, semillas, terminología y carga bajo demanda: correcta.")
 
 
 if __name__ == "__main__":
