@@ -3,14 +3,26 @@
 const charts = {};
 const workers = {};
 const palette = {
-  accent: '#65f2c2', blue: '#88a7ff', warn: '#ffba72', danger: '#ff7f91',
-  text: '#dce9f8', muted: '#8398b0', grid: 'rgba(173,205,235,.10)'
+  navy900: '#03045E',
+  navy800: '#023E8A',
+  blue700: '#0077B6',
+  blue600: '#0096C7',
+  cyan500: '#00B4D8',
+  cyan400: '#48CAE4',
+  cyan200: '#90E0EF',
+  cyan100: '#ADE8F4',
+  cyan50: '#CAF0F8',
+  text: '#03045E',
+  muted: '#023E8A',
+  grid: 'rgba(3,4,94,.13)'
 };
 
-Chart.defaults.color = palette.muted;
+Chart.defaults.color = palette.text;
 Chart.defaults.borderColor = palette.grid;
 Chart.defaults.font.family = 'Inter, ui-sans-serif, system-ui, sans-serif';
 Chart.defaults.animation.duration = 300;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.color = palette.text;
 
 const intervalPlugin = {
   id: 'intervalPlugin',
@@ -20,30 +32,58 @@ const intervalPlugin = {
     ctx.save();
     chart.$intervals.forEach((interval, index) => {
       const py = y.getPixelForValue(index + 1);
-      const color = interval.hit ? palette.accent : palette.danger;
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = .82;
-      ctx.beginPath();
-      ctx.moveTo(x.getPixelForValue(interval.lo), py);
-      ctx.lineTo(x.getPixelForValue(interval.hi), py);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x.getPixelForValue((interval.lo + interval.hi) / 2), py, 2.4, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.setLineDash(interval.hit ? [] : [5, 4]);
+      const drawInterval = () => {
+        ctx.beginPath();
+        ctx.moveTo(x.getPixelForValue(interval.lo), py);
+        ctx.lineTo(x.getPixelForValue(interval.hi), py);
+        ctx.stroke();
+      };
+      if (interval.hit) {
+        ctx.strokeStyle = palette.blue700;
+        ctx.lineWidth = 2.2;
+        drawInterval();
+      } else {
+        ctx.strokeStyle = palette.navy800;
+        ctx.lineWidth = 4;
+        drawInterval();
+        ctx.strokeStyle = palette.cyan400;
+        ctx.lineWidth = 2;
+        drawInterval();
+      }
+      ctx.setLineDash([]);
+      const center = x.getPixelForValue((interval.lo + interval.hi) / 2);
+      if (interval.hit) {
+        ctx.fillStyle = palette.blue700;
+        ctx.beginPath();
+        ctx.arc(center, py, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = palette.cyan400;
+        ctx.fillRect(center - 3.5, py - 3.5, 7, 7);
+        ctx.strokeStyle = palette.navy900;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(center - 3.5, py - 3.5, 7, 7);
+      }
+      ctx.setLineDash([]);
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 1;
     });
     if (Number.isFinite(chart.$theta)) {
       const px = x.getPixelForValue(chart.$theta);
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = palette.blue;
-      ctx.setLineDash([6, 5]);
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = palette.navy900;
+      ctx.setLineDash([7, 5]);
+      ctx.lineWidth = 2.6;
       ctx.beginPath();
       ctx.moveTo(px, chart.chartArea.top);
       ctx.lineTo(px, chart.chartArea.bottom);
       ctx.stroke();
     }
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 1;
     ctx.restore();
   }
 };
@@ -123,9 +163,13 @@ function setProgress(problem, ratio) {
 function setStatus(problem, message) { el(`p${problem}-status`).textContent = message; }
 function reportError(problem, message = '') {
   const box = el(`p${problem}-error`);
-  box.textContent = message;
-  box.classList.toggle('visible', Boolean(message));
-  return Boolean(message);
+  const clean = message.trim();
+  const display = clean
+    ? (/^error\s*:/i.test(clean) ? clean.replace(/^error\s*:/i, 'Error:') : `Error: ${clean}`)
+    : '';
+  box.textContent = display;
+  box.classList.toggle('visible', Boolean(display));
+  return Boolean(display);
 }
 
 function buttonBusy(problem, busy) {
@@ -211,7 +255,7 @@ function runWorker(problem, params, onProgress, onResult) {
   };
   worker.onerror = event => {
     buttonBusy(problem, false);
-    reportError(problem, `Error del proceso de simulación: ${event.message}`);
+    reportError(problem, `El proceso de simulación informó: ${event.message}`);
     setStatus(problem, 'La simulación se detuvo por un error.');
     worker.terminate();
     workers[problem] = null;
@@ -320,8 +364,8 @@ function runP2() {
   charts.p2 = new Chart(el('p2-chart'), {
     type: 'line',
     data: { datasets: [
-      { label: 'Cobertura binomial exacta', data: points, parsing: false, borderColor: palette.accent, backgroundColor: 'rgba(101,242,194,.09)', pointRadius: 0, borderWidth: 2, tension: 0 },
-      { label: 'Objetivo nominal', data: [{ x: 0, y: confidence * 100 }, { x: 1, y: confidence * 100 }], parsing: false, borderColor: palette.warn, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
+      { label: 'Cobertura binomial exacta', data: points, parsing: false, borderColor: palette.blue700, backgroundColor: 'rgba(72,202,228,.18)', pointRadius: 0, borderWidth: 2.4, fill: true, tension: 0 },
+      { label: 'Nivel nominal', data: [{ x: 0, y: confidence * 100 }, { x: 1, y: confidence * 100 }], parsing: false, borderColor: palette.navy900, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
     ] },
     options: {
       responsive: true, maintainAspectRatio: false, interaction: { mode: 'nearest', intersect: false },
@@ -349,9 +393,9 @@ function buildP3VarianceChart(a, b, probability) {
   charts.p3var = new Chart(el('p3-var-chart'), {
     type: 'line',
     data: { datasets: [
-      { label: 'p(1-p)(b-a)²', data: curve, parsing: false, borderColor: palette.blue, backgroundColor: 'rgba(136,167,255,.10)', fill: true, pointRadius: 0, borderWidth: 2, tension: .15 },
-      { label: 'p seleccionado', data: [{ x: probability, y: probability * (1 - probability) * (b - a) ** 2 }], parsing: false, borderColor: palette.accent, backgroundColor: palette.accent, pointRadius: 7 },
-      { label: 'Cota (b-a)²/4', data: [{ x: 0, y: bound }, { x: 1, y: bound }], parsing: false, borderColor: palette.warn, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
+      { label: 'Varianza p(1-p)(b-a)²', data: curve, parsing: false, borderColor: palette.blue700, backgroundColor: 'rgba(72,202,228,.18)', fill: true, pointRadius: 0, borderWidth: 2.4, tension: .15 },
+      { label: 'Punto seleccionado', data: [{ x: probability, y: probability * (1 - probability) * (b - a) ** 2 }], parsing: false, borderColor: palette.navy900, backgroundColor: palette.cyan500, pointStyle: 'circle', pointRadius: 7, pointBorderWidth: 2 },
+      { label: 'Cota (b-a)²/4', data: [{ x: 0, y: bound }, { x: 1, y: bound }], parsing: false, borderColor: palette.navy900, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
     ] },
     options: { responsive: true, maintainAspectRatio: false, scales: {
       x: { type: 'linear', min: 0, max: 1, title: { display: true, text: 'p = P(X=a)' }, grid: { color: palette.grid } },
@@ -367,8 +411,8 @@ function buildP3CoverageChart(result, confidence) {
     data: {
       labels: ['Conservador (TCL)', 'Hoeffding'],
       datasets: [
-        { label: 'Intervalos que contienen a μ', data: [result.covCon * 100, result.covHoeff * 100], backgroundColor: [palette.blue, palette.warn], borderColor: [palette.blue, palette.warn], borderWidth: 1 },
-        { type: 'line', label: 'Nivel nominal', data: [confidence * 100, confidence * 100], borderColor: palette.danger, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
+        { label: 'Intervalos que contienen a μ', data: [result.covCon * 100, result.covHoeff * 100], backgroundColor: [palette.navy800, palette.cyan400], borderColor: [palette.navy900, palette.navy900], borderWidth: 2 },
+        { type: 'line', label: 'Nivel nominal', data: [confidence * 100, confidence * 100], borderColor: palette.navy900, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: Math.max(0, confidence * 100 - 6), max: 100, title: { display: true, text: 'Probabilidad de cobertura (%)' }, grid: { color: palette.grid } } } }
@@ -436,12 +480,15 @@ function buildP4Charts(result, theta) {
   const combined = result.samples.flat().filter(Number.isFinite).sort((a, b) => a - b);
   const min = quantile(combined, .01);
   const max = quantile(combined, .99);
-  const colors = [palette.warn, palette.blue, palette.accent];
+  const colors = [palette.navy900, palette.blue700, palette.cyan500];
+  const dashes = [[], [7, 5], [9, 4, 2, 4]];
+  const pointStyles = ['circle', 'rect', 'triangle'];
   const distributions = result.samples.map((sample, index) => ({
     label: result.stats[index].name,
     data: histogram(sample, min, max, 38), parsing: false,
-    borderColor: colors[index], backgroundColor: `${colors[index]}35`, borderWidth: 1.4,
-    pointRadius: 0, fill: true, tension: .16
+    borderColor: colors[index], backgroundColor: colors[index], borderDash: dashes[index],
+    borderWidth: 2.2, pointStyle: pointStyles[index], pointRadius: 1.8,
+    pointHoverRadius: 4, fill: false, tension: .16
   }));
   destroyChart('p4dist');
   charts.p4dist = new Chart(el('p4-dist-chart'), {
@@ -451,13 +498,15 @@ function buildP4Charts(result, theta) {
       y: { beginAtZero: true, title: { display: true, text: 'Densidad empírica' }, grid: { color: palette.grid } }
     } }
   });
-  charts.p4dist.$verticalLines = [{ value: theta, label: 'θ verdadero', color: palette.danger, dash: [6, 5] }];
+  charts.p4dist.$verticalLines = [{ value: theta, label: 'θ verdadero', color: palette.navy900, dash: [7, 5] }];
   charts.p4dist.update();
 
   const curveDatasets = result.stats.map((stat, index) => ({
     label: stat.name,
     data: result.mseCurve.map(point => ({ x: point.n, y: point.mse[index] })),
-    parsing: false, borderColor: colors[index], backgroundColor: colors[index], pointRadius: 4, borderWidth: 2, tension: .15
+    parsing: false, borderColor: colors[index], backgroundColor: colors[index],
+    borderDash: dashes[index], pointStyle: pointStyles[index], pointRadius: 4,
+    pointBorderColor: palette.navy900, pointBorderWidth: 1, borderWidth: 2.2, tension: .15
   }));
   destroyChart('p4mse');
   charts.p4mse = new Chart(el('p4-mse-chart'), {
@@ -516,8 +565,8 @@ function buildP5Chart(result, confidence) {
     data: {
       labels: ['Exacto', 'Percentil', 'Básico', 'Pivotal'],
       datasets: [
-        { label: 'Intervalos que contienen a θ', data: [result.exact * 100, result.percentile * 100, result.basic * 100, result.pivotal * 100], backgroundColor: [palette.blue, palette.danger, palette.warn, palette.accent], borderColor: [palette.blue, palette.danger, palette.warn, palette.accent], borderWidth: 1 },
-        { type: 'line', label: 'Nivel nominal', data: [confidence * 100, confidence * 100, confidence * 100, confidence * 100], borderColor: palette.danger, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
+        { label: 'Intervalos que contienen a θ', data: [result.exact * 100, result.percentile * 100, result.basic * 100, result.pivotal * 100], backgroundColor: [palette.navy900, palette.navy800, palette.cyan500, palette.cyan400], borderColor: [palette.navy900, palette.navy900, palette.navy900, palette.navy900], borderWidth: 2 },
+        { type: 'line', label: 'Nivel nominal', data: [confidence * 100, confidence * 100, confidence * 100, confidence * 100], borderColor: palette.blue700, borderDash: [7, 6], pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Probabilidad de cobertura (%)' }, grid: { color: palette.grid } } } }
@@ -535,8 +584,8 @@ function buildP5DemoChart(showcase, theta) {
       label: 'Distribución bootstrap de M*',
       data: histogram(values, min, max, 34),
       parsing: false,
-      borderColor: palette.accent,
-      backgroundColor: 'rgba(101,242,194,.14)',
+      borderColor: palette.blue700,
+      backgroundColor: 'rgba(72,202,228,.25)',
       borderWidth: 2,
       pointRadius: 0,
       fill: true,
@@ -548,8 +597,8 @@ function buildP5DemoChart(showcase, theta) {
     } }
   });
   charts.p5demo.$verticalLines = [
-    { value: showcase.minimum, label: 'M = θ̂', color: palette.blue, dash: [6, 5] },
-    { value: theta, label: 'θ verdadero', color: palette.danger, dash: [3, 4], offset: 16 }
+    { value: showcase.minimum, label: 'M = θ̂', color: palette.cyan500 },
+    { value: theta, label: 'θ verdadero', color: palette.navy900, dash: [7, 5], offset: 16 }
   ];
   charts.p5demo.update();
 
